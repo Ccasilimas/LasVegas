@@ -104,8 +104,3 @@ docker run -p 8000:8000 real-estate-search
 ### License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### Acknowledgements
-
-- FastAPI documentation
-- Docker documentation
