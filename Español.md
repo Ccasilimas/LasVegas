@@ -1,4 +1,4 @@
-# API de Búsqueda de Bienes Raíces
+# API de Búsqueda de Bienes Raíces (Las Vegas)
 
 Este proyecto implementa una aplicación web basada en FastAPI que permite a los usuarios buscar propiedades inmobiliarias según diversos criterios, como rango de precios, número de habitaciones, baños y código postal.
 

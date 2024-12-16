@@ -1,4 +1,4 @@
-# Real Estate Search API
+# Real Estate Search API (Las Vegas)
 
 This project implements a FastAPI-based web application that allows users to search for real estate listings based on various criteria such as price range, number of beds, baths, and zip code.
 
