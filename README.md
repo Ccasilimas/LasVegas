@@ -59,39 +59,6 @@ You can now access the API at `http://localhost:8000`.
 GET /search?min_price=500000&max_price=1000000&beds=3&zipcode=89141
 ```
 
-#### Example Response
-```json
-[
-    {
-        "zpid": "331665222",
-        "Status Type": "FOR_SALE",
-        "Status Text": "House for sale",
-        "Time On Zillow": null,
-        "Price": 479900,
-        "Area": 1796,
-        "Price Per Sqft": 267,
-        "Zestimate": 475000,
-        "Zestimate Price Per Sqft": 264,
-        "Rent Zestimate": 2134,
-        "Lot Area": 3484.8,
-        "Lot Area Unit": "sqft",
-        "Beds": 3,
-        "Bathrooms": 3,
-        "Address": "6276 Desert Orchid Way",
-        "Street": "6276 Desert Orchid Way",
-        "City": "Las Vegas",
-        "State": "NV",
-        "Zipcode": "89141",
-        "Latitude": 35.998367,
-        "Longitude": -115.22939,
-        "Broker Name": "Real Broker LLC",
-        "is zillow owned": "FALSE",
-        "Sold Date": null,
-        "Sold Price": null,
-        "Image URL": "https://photos.zillowstatic.com/fp/faa93bdf5a545e30d437987caf9ec4c2-p_e.jpg"
-    }
-]
-```
 
 ### Running with Docker
 
