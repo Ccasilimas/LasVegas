@@ -22,7 +22,7 @@
             <input type="number" id="max_price" name="max_price" class="w-full p-2 border border-gray-300 rounded">
         </div>
         <div class="w-full sm:w-1/5">
-            <label for="beds" class="block text-gray-700 text-sm mb-1">Camas</label>
+            <label for="beds" class="block text-gray-700 text-sm mb-1">Habitaciones</label>
             <input type="number" id="beds" name="beds" class="w-full p-2 border border-gray-300 rounded">
         </div>
         <div class="w-full sm:w-1/5">
@@ -34,8 +34,25 @@
         </div>
     </form>
     
-    <div id="results" class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="results" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    
+    <div id="pagination" class="hidden flex justify-center items-center mt-8 space-x-4">
+        <button id="prev-page" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded" disabled>Anterior</button>
+        <span id="page-info" class="text-gray-700">Página 1 de 1</span>
+        <button id="next-page" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded" disabled>Siguiente</button>
+    </div>
+
     <script>
+        let allProperties = [];
+        let currentPage = 1;
+        const propertiesPerPage = 9;
+
+        // Función para mostrar o ocultar la paginación
+        function togglePagination(show) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.classList.toggle('hidden', !show);
+        }
+
         document.getElementById('search-form').addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -45,7 +62,19 @@
             const beds = document.getElementById('beds').value;
             const baths = document.getElementById('baths').value;
 
-            fetch(`https://lasvegas.onrender.com/search?city-postal-address=${cityPostalAddress}&min_price=${min_price}&max_price=${max_price}&beds=${beds}&baths=${baths}`)
+            // Construir la URL de búsqueda
+            let searchUrl = `https://lasvegas.onrender.com/search?`;
+            const params = [];
+            
+            if (cityPostalAddress) params.push(`city-postal-address=${encodeURIComponent(cityPostalAddress)}`);
+            if (min_price) params.push(`min_price=${min_price}`);
+            if (max_price) params.push(`max_price=${max_price}`);
+            if (beds) params.push(`beds=${beds}`);
+            if (baths) params.push(`baths=${baths}`);
+
+            searchUrl += params.join('&');
+
+            fetch(searchUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -53,28 +82,86 @@
                     return response.json();
                 })
                 .then(data => {
-                    const resultsDiv = document.getElementById('results');
-                    resultsDiv.innerHTML = '';
-                    data.forEach(property => {
-                        const propertyDiv = document.createElement('div');
-                        propertyDiv.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-md', 'flex', 'flex-col');
-                        propertyDiv.innerHTML = `
-                            <img src="${property['Image URL']}" alt="Foto de la propiedad" class="w-full h-48 object-cover rounded mb-4">
-                            <div class="flex-grow">
-                                <p class="text-lg font-bold mb-2">${property['Address']}</p>
-                                <p class="text-gray-700 mb-1">Precio: $${property['Price']}</p>
-                                <p class="text-gray-700">Área: ${property['Area']} sq ft</p>
+                    allProperties = data;
+                    currentPage = 1;
+                    
+                    if (allProperties.length > 0) {
+                        renderProperties();
+                        updatePagination();
+                        togglePagination(true);
+                    } else {
+                        const resultsDiv = document.getElementById('results');
+                        resultsDiv.innerHTML = `
+                            <div class="text-center text-gray-500 col-span-full">
+                                No se encontraron propiedades que coincidan con su búsqueda.
                             </div>
                         `;
-                        resultsDiv.appendChild(propertyDiv);
-                    });
+                        togglePagination(false);
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('results').innerHTML = `
-                        <div class="text-red-500">Error al cargar las propiedades. Por favor, intenta de nuevo.</div>
+                        <div class="text-red-500 text-center col-span-full">
+                            Error al cargar las propiedades. Por favor, intenta de nuevo.
+                        </div>
                     `;
+                    togglePagination(false);
                 });
+        });
+
+        function renderProperties() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * propertiesPerPage;
+            const endIndex = startIndex + propertiesPerPage;
+            const pageProperties = allProperties.slice(startIndex, endIndex);
+
+            pageProperties.forEach(property => {
+                const propertyDiv = document.createElement('div');
+                propertyDiv.classList.add('bg-white', 'p-6', 'rounded-lg', 'shadow-md', 'flex', 'flex-col');
+                propertyDiv.innerHTML = `
+                    <img src="${property['Image URL']}" alt="Foto de la propiedad" class="w-full h-48 object-cover rounded mb-4">
+                    <div class="flex-grow">
+                        <p class="text-lg font-bold mb-2">${property['Address']}</p>
+                        <p class="text-gray-700 mb-1">Precio: $${property['Price']}</p>
+                        <p class="text-gray-700">Área: ${property['Area']} sq ft</p>
+                        <p class="text-gray-700">Habitaciones: ${property['Beds']} | Baños: ${property['Bathrooms']}</p>
+                    </div>
+                `;
+                resultsDiv.appendChild(propertyDiv);
+            });
+        }
+
+        function updatePagination() {
+            const prevButton = document.getElementById('prev-page');
+            const nextButton = document.getElementById('next-page');
+            const pageInfo = document.getElementById('page-info');
+
+            const totalPages = Math.ceil(allProperties.length / propertiesPerPage);
+
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages;
+
+            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+        }
+
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderProperties();
+                updatePagination();
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', () => {
+            const totalPages = Math.ceil(allProperties.length / propertiesPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderProperties();
+                updatePagination();
+            }
         });
     </script>
 </body>
